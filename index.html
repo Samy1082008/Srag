@@ -3,105 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول</title>
+    <title>لعبة التحدي</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            background-color: #f0f0f0;
+            overflow: hidden;
         }
-
-        .login-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 300px;
+        #gameContainer {
+            position: relative;
+            width: 600px;
+            height: 400px;
+            background-color: #222;
+            border: 2px solid #fff;
         }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        #player {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background-color: #00ff00;
+            border-radius: 5px;
         }
-
-        button {
-            width: 100%;
-            padding: 10px;
+        .ball {
+            position: absolute;
+            background-color: red;
+            border-radius: 50%;
+        }
+        #score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-size: 20px;
+        }
+        #startBtn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 18px;
             background-color: green;
             color: white;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
         }
-
-        button:hover {
-            background-color: darkgreen;
-        }
-
-        /* صفحة النجاح */
-        .success-container {
-            text-align: center;
-            padding: 50px;
-            background-color: #e0f7e0;
-            border-radius: 8px;
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            color: red;
+            display: none;
         }
     </style>
-    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
 </head>
 <body>
-
-    <!-- نموذج تسجيل الدخول -->
-    <div class="login-container">
-        <form id="loginForm">
-            <input type="email" id="email" name="email" placeholder="ادخل البريد الإلكتروني" required>
-            <input type="password" id="password" name="password" placeholder="ادخل كلمة السر" required>
-            <button type="submit">دخول</button>
-        </form>
+    <div id="gameContainer">
+        <div id="score">النتيجة: 0</div>
+        <div id="player"></div>
+        <div id="gameOver">انتهت اللعبة!</div>
+        <button id="startBtn">ابدأ اللعبة</button>
     </div>
-
     <script>
-        // Initialize EmailJS
-        emailjs.init("w8sGGFu3ACr5Aj1Kb");
+        let player = document.getElementById("player");
+        let scoreDisplay = document.getElementById("score");
+        let gameContainer = document.getElementById("gameContainer");
+        let startBtn = document.getElementById("startBtn");
+        let gameOverText = document.getElementById("gameOver");
 
-        // Handle form submission
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent form from reloading the page
-            
-            var email = document.getElementById("email").value;
-            var password = document.getElementById("password").value;
+        let playerSpeed = 10;
+        let playerPos = { x: gameContainer.offsetWidth / 2 - 25, y: gameContainer.offsetHeight - 60 };
+        let score = 0;
+        let balls = [];
+        let isGameRunning = false;
 
-            var templateParams = {
-                email: email,
-                password: password
-            };
+        const movePlayer = (direction) => {
+            if (direction === "left" && playerPos.x > 0) {
+                playerPos.x -= playerSpeed;
+            } else if (direction === "right" && playerPos.x < gameContainer.offsetWidth - 50) {
+                playerPos.x += playerSpeed;
+            }
+            player.style.left = playerPos.x + "px";
+        };
 
-            // Send email using EmailJS
-            emailjs.send("Ssre", templateParams)
-                .then(function(response) {
-                    alert("تم إرسال البريد الإلكتروني بنجاح");
-                    window.location.href = "#success";
-                }, function(error) {
-                    alert("فشل إرسال البريد الإلكتروني: " + error.text);
-                });
+        const generateBall = () => {
+            const ball = document.createElement("div");
+            ball.classList.add("ball");
+            ball.style.width = Math.random() * 20 + 30 + "px";
+            ball.style.height = ball.style.width;
+            ball.style.left = Math.random() * (gameContainer.offsetWidth - 50) + "px";
+            ball.style.top = "-30px";
+            gameContainer.appendChild(ball);
+            balls.push(ball);
+        };
+
+        const updateGame = () => {
+            balls.forEach((ball, index) => {
+                let ballTop = parseInt(ball.style.top);
+                if (ballTop > gameContainer.offsetHeight - 50 && ballTop < gameContainer.offsetHeight) {
+                    let ballLeft = parseInt(ball.style.left);
+                    if (ballLeft > playerPos.x && ballLeft < playerPos.x + 50) {
+                        gameOver();
+                    }
+                }
+                ball.style.top = ballTop + 5 + "px";
+                if (ballTop > gameContainer.offsetHeight) {
+                    gameContainer.removeChild(ball);
+                    balls.splice(index, 1);
+                    score++;
+                    scoreDisplay.textContent = "النتيجة: " + score;
+                }
+            });
+        };
+
+        const gameOver = () => {
+            isGameRunning = false;
+            gameOverText.style.display = "block";
+            startBtn.style.display = "inline-block";
+        };
+
+        startBtn.addEventListener("click", () => {
+            if (!isGameRunning) {
+                isGameRunning = true;
+                score = 0;
+                balls = [];
+                scoreDisplay.textContent = "النتيجة: 0";
+                gameOverText.style.display = "none";
+                startBtn.style.display = "none";
+                playerPos = { x: gameContainer.offsetWidth / 2 - 25, y: gameContainer.offsetHeight - 60 };
+                player.style.left = playerPos.x + "px";
+
+                const gameInterval = setInterval(() => {
+                    if (!isGameRunning) clearInterval(gameInterval);
+                    generateBall();
+                    updateGame();
+                }, 1000 / 60);
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowLeft") {
+                movePlayer("left");
+            } else if (event.key === "ArrowRight") {
+                movePlayer("right");
+            }
         });
     </script>
-
-    <!-- صفحة النجاح -->
-    <div id="success" class="success-container" style="display:none;">
-        <h1>تم تسجيل الدخول بنجاح</h1>
-    </div>
-
 </body>
 </html>
