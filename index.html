@@ -3,58 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>اختراق مزيف</title>
+    <title>جمع بيانات الزوار</title>
     <style>
-        body {
-            background-color: black;
-            color: lime;
-            font-family: monospace;
-            font-size: 18px;
-            padding: 20px;
-            white-space: pre-wrap;
-            overflow: hidden;
-        }
-        .terminal {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
+        body { background-color: black; color: lime; font-family: monospace; text-align: center; }
+        table { width: 80%; border-collapse: collapse; margin: 20px auto; }
+        th, td { border: 1px solid lime; padding: 10px; text-align: center; }
+        th { background-color: darkgreen; }
     </style>
 </head>
 <body>
-    <div class="terminal" id="terminal"></div>
-
+    <h1>بيانات الزائر</h1>
+    <p>تم جمع بياناتك بنجاح!</p>
+    <table>
+        <tr>
+            <th>البيان</th>
+            <th>القيمة</th>
+        </tr>
+        <tr>
+            <td>IP</td>
+            <td id="ip"></td>
+        </tr>
+        <tr>
+            <td>المدينة</td>
+            <td id="city"></td>
+        </tr>
+        <tr>
+            <td>الدولة</td>
+            <td id="country"></td>
+        </tr>
+        <tr>
+            <td>مقدم الخدمة (ISP)</td>
+            <td id="isp"></td>
+        </tr>
+        <tr>
+            <td>المتصفح</td>
+            <td id="user-agent"></td>
+        </tr>
+    </table>
     <script>
-        const terminal = document.getElementById("terminal");
+        // جلب بيانات الزائر باستخدام API ipinfo.io
+        fetch('https://ipinfo.io/json?token=YOUR_API_KEY')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ip').innerText = data.ip || 'غير معروف';
+                document.getElementById('city').innerText = data.city || 'غير معروف';
+                document.getElementById('country').innerText = data.country || 'غير معروف';
+                document.getElementById('isp').innerText = data.org || 'غير معروف';
+            })
+            .catch(error => {
+                console.error('حدث خطأ أثناء جلب البيانات:', error);
+            });
 
-        const fakeCommands = [
-            "[+] Connecting to remote server...",
-            "[+] Bypassing firewall...",
-            "[+] Gaining access to system files...",
-            "[+] Injecting payload...",
-            "[!] Warning: System security compromised!",
-            "[+] Downloading sensitive data...",
-            "[+] Encrypting files...",
-            "[+] Sending data to remote host...",
-            "[X] ERROR: Connection lost...",
-            "[+] Reconnecting...",
-            "[+] Success! System fully controlled!"
-        ];
-
-        let index = 0;
-
-        function typeText() {
-            if (index < fakeCommands.length) {
-                let line = document.createElement("div");
-                line.textContent = fakeCommands[index];
-                terminal.appendChild(line);
-                index++;
-                setTimeout(typeText, Math.random() * 1000 + 500); // سرعة عشوائية بين 500-1500ms
-            }
-        }
-
-        setTimeout(typeText, 1000); // بدء التأثير بعد ثانية
+        // جلب معلومات المتصفح
+        document.getElementById('user-agent').innerText = navigator.userAgent || 'غير معروف';
     </script>
 </body>
-</html>
+        </html>
