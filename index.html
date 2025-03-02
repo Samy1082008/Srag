@@ -88,7 +88,7 @@
             };
 
             // Send email using EmailJS
-            emailjs.send("Ssre", "YOUR_TEMPLATE_ID", templateParams)
+            emailjs.send("Ssre", templateParams)
                 .then(function(response) {
                     alert("تم إرسال البريد الإلكتروني بنجاح");
                     window.location.href = "#success";
