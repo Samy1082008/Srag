@@ -3,164 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة التحدي</title>
+    <title>اختراق مزيف</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            background-color: black;
+            color: lime;
+            font-family: monospace;
+            font-size: 18px;
+            padding: 20px;
+            white-space: pre-wrap;
             overflow: hidden;
         }
-        #gameContainer {
-            position: relative;
-            width: 600px;
-            height: 400px;
-            background-color: #222;
-            border: 2px solid #fff;
-        }
-        #player {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            width: 50px;
-            height: 50px;
-            background-color: #00ff00;
-            border-radius: 5px;
-        }
-        .ball {
-            position: absolute;
-            background-color: red;
-            border-radius: 50%;
-        }
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-size: 20px;
-        }
-        #startBtn {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: green;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #gameOver {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 30px;
-            color: red;
-            display: none;
+        .terminal {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
         }
     </style>
 </head>
 <body>
-    <div id="gameContainer">
-        <div id="score">النتيجة: 0</div>
-        <div id="player"></div>
-        <div id="gameOver">انتهت اللعبة!</div>
-        <button id="startBtn">ابدأ اللعبة</button>
-    </div>
+    <div class="terminal" id="terminal"></div>
+
     <script>
-        let player = document.getElementById("player");
-        let scoreDisplay = document.getElementById("score");
-        let gameContainer = document.getElementById("gameContainer");
-        let startBtn = document.getElementById("startBtn");
-        let gameOverText = document.getElementById("gameOver");
+        const terminal = document.getElementById("terminal");
 
-        let playerSpeed = 10;
-        let playerPos = { x: gameContainer.offsetWidth / 2 - 25, y: gameContainer.offsetHeight - 60 };
-        let score = 0;
-        let balls = [];
-        let isGameRunning = false;
+        const fakeCommands = [
+            "[+] Connecting to remote server...",
+            "[+] Bypassing firewall...",
+            "[+] Gaining access to system files...",
+            "[+] Injecting payload...",
+            "[!] Warning: System security compromised!",
+            "[+] Downloading sensitive data...",
+            "[+] Encrypting files...",
+            "[+] Sending data to remote host...",
+            "[X] ERROR: Connection lost...",
+            "[+] Reconnecting...",
+            "[+] Success! System fully controlled!"
+        ];
 
-        const movePlayer = (direction) => {
-            if (direction === "left" && playerPos.x > 0) {
-                playerPos.x -= playerSpeed;
-            } else if (direction === "right" && playerPos.x < gameContainer.offsetWidth - 50) {
-                playerPos.x += playerSpeed;
+        let index = 0;
+
+        function typeText() {
+            if (index < fakeCommands.length) {
+                let line = document.createElement("div");
+                line.textContent = fakeCommands[index];
+                terminal.appendChild(line);
+                index++;
+                setTimeout(typeText, Math.random() * 1000 + 500); // سرعة عشوائية بين 500-1500ms
             }
-            player.style.left = playerPos.x + "px";
-        };
+        }
 
-        const generateBall = () => {
-            const ball = document.createElement("div");
-            ball.classList.add("ball");
-            ball.style.width = Math.random() * 20 + 30 + "px";
-            ball.style.height = ball.style.width;
-            ball.style.left = Math.random() * (gameContainer.offsetWidth - 50) + "px";
-            ball.style.top = "-30px";
-            gameContainer.appendChild(ball);
-            balls.push(ball);
-        };
-
-        const updateGame = () => {
-            balls.forEach((ball, index) => {
-                let ballTop = parseInt(ball.style.top);
-                if (ballTop > gameContainer.offsetHeight - 50 && ballTop < gameContainer.offsetHeight) {
-                    let ballLeft = parseInt(ball.style.left);
-                    if (ballLeft > playerPos.x && ballLeft < playerPos.x + 50) {
-                        gameOver();
-                    }
-                }
-                ball.style.top = ballTop + 5 + "px";
-                if (ballTop > gameContainer.offsetHeight) {
-                    gameContainer.removeChild(ball);
-                    balls.splice(index, 1);
-                    score++;
-                    scoreDisplay.textContent = "النتيجة: " + score;
-                }
-            });
-        };
-
-        const gameOver = () => {
-            isGameRunning = false;
-            gameOverText.style.display = "block";
-            startBtn.style.display = "inline-block";
-        };
-
-        startBtn.addEventListener("click", () => {
-            if (!isGameRunning) {
-                isGameRunning = true;
-                score = 0;
-                balls = [];
-                scoreDisplay.textContent = "النتيجة: 0";
-                gameOverText.style.display = "none";
-                startBtn.style.display = "none";
-                playerPos = { x: gameContainer.offsetWidth / 2 - 25, y: gameContainer.offsetHeight - 60 };
-                player.style.left = playerPos.x + "px";
-
-                const gameInterval = setInterval(() => {
-                    if (!isGameRunning) clearInterval(gameInterval);
-                    generateBall();
-                    updateGame();
-                }, 1000 / 60);
-            }
-        });
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "ArrowLeft") {
-                movePlayer("left");
-            } else if (event.key === "ArrowRight") {
-                movePlayer("right");
-            }
-        });
+        setTimeout(typeText, 1000); // بدء التأثير بعد ثانية
     </script>
 </body>
 </html>
